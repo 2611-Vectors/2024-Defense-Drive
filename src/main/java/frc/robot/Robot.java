@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
+    @SuppressWarnings("unused")
     private final RobotContainer m_robotContainer;
 
     /* log and replay timestamp and joystick data */
@@ -38,7 +39,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledExit() {}
-
+/* 
+    //maxSpeed tuntime variable breaks AutonomousCommand but 2024 has no auto so we chillin
     @Override
     public void autonomousInit() {
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -46,7 +48,7 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
-    }
+    } */
 
     @Override
     public void autonomousPeriodic() {}
