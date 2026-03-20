@@ -20,6 +20,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
+
+    /*MaxSpeed directly scales joystick inputs, this is where we should test and 
+    adjust float multiplier to find a comfortable but still fast max speed before we edit SpeedAt12Volts 
+    in TunerConstants (add a runtime variable we can chance in advantage scope on the fly?) */
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
