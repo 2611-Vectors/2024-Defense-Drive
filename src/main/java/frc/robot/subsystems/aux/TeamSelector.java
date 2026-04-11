@@ -6,18 +6,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class TeamSelector extends SubsystemBase {
-    static DigitalInput teamSwitch = new DigitalInput(Constants.TEAMSWITCH_ID);
-    static String sendSwitchData;
-    public TeamSelector() {}
+  static DigitalInput teamSwitch = new DigitalInput(Constants.TEAMSWITCH_ID);
+  static String sendSwitchData;
 
-    @Override
-    public void periodic() {
-        TeamSelector.getTeamColor();
-    }
+  public TeamSelector() {}
 
-    public static boolean getTeamColor() {
-        sendSwitchData = !teamSwitch.get()? "Red" : "Blue";
-        SmartDashboard.putString("Which Team", sendSwitchData);
-        return !teamSwitch.get(); // true if red, false if blue
-    }
+  @Override
+  public void periodic() {
+    TeamSelector.getTeamColor();
+  }
+
+  public static boolean getTeamColor() {
+    sendSwitchData = !teamSwitch.get() ? "Red" : "Blue";
+    SmartDashboard.putString("Which Team", sendSwitchData);
+    return !teamSwitch.get(); // true if red, false if blue
+  }
 }
