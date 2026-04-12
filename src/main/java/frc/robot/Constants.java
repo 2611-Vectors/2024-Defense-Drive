@@ -1,5 +1,10 @@
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class Constants {
@@ -25,7 +30,6 @@ public class Constants {
     public static final int TILT = 44;
     public static final int TOP_SHOOTER = 61;
     public static final int BOTTOM_SHOOTER = 62;
-    public static final double MAX_TILT_POWER = 1;
   }
 
   public final class ClimbConstants {
@@ -33,7 +37,7 @@ public class Constants {
     public static final int RETIRED_CLIMB_B = 42;
   }
 
-  public final class OperatorConstants {
+  public final class ControllerConstants {
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
   }
@@ -41,6 +45,42 @@ public class Constants {
   public final class PowerConstants {
     public static final double INTAKE_POWER = 0.8;
     public static final double FEED_POWER = 0.7;
+    public static final double MAX_TILT_POWER = 1;
+    public static final double SHOOTER_POWER = 10;
+  }
+
+  public static class VisionConstants {
+    // AprilTag Field Layout (copied from 2026-Beta-Bot)
+    public static AprilTagFieldLayout aprilTagLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+
+    // No cams yet, these are placeholders
+    public static final String leftCam = "Camera1";
+    public static final Transform3d robotToLeftCam =
+        new Transform3d(
+            Units.inchesToMeters(0),
+            Units.inchesToMeters(0),
+            Units.inchesToMeters(0),
+            new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+
+    public static final String rightCam = "Camera2";
+    public static final Transform3d robotToRightCam =
+        new Transform3d(
+            Units.inchesToMeters(0),
+            Units.inchesToMeters(0),
+            Units.inchesToMeters(0),
+            new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(0)));
+
+    public static final double MAX_AMBIGUITY = 0.2;
+    public static final double MAX_Z_ERROR = 0.2;
+
+    public static double linearStdDevBaseline = 0.02; // Meters
+    public static double angularStdDevBaseline = 0.03; // Radians
+
+    public static double[] cameraStdDevFactors = new double[] {1.0};
+
+    public static double linearStdDevMegatag2Factor = 0.5;
+    public static double angularStdDevMegatag2Factor = Double.POSITIVE_INFINITY;
   }
 
   public static enum Mode {

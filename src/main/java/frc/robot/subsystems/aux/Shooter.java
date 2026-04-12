@@ -11,8 +11,10 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.PowerConstants;
 
 public class Shooter extends SubsystemBase {
   SparkMax tilt = new SparkMax(Constants.ShooterConstants.TILT, SparkMax.MotorType.kBrushless);
@@ -175,9 +177,9 @@ public class Shooter extends SubsystemBase {
 
     SmartDashboard.putNumber(
         "PID Power",
-        Math.signum(power) * Math.min(Math.abs(power), Constants.ShooterConstants.MAX_TILT_POWER));
+        Math.signum(power) * Math.min(Math.abs(power), Constants.PowerConstants.MAX_TILT_POWER));
     tilt.set(
-        Math.signum(power) * Math.min(Math.abs(power), Constants.ShooterConstants.MAX_TILT_POWER));
+        Math.signum(power) * Math.min(Math.abs(power), Constants.PowerConstants.MAX_TILT_POWER));
   }
 
   public void stopTilt() {
@@ -193,5 +195,16 @@ public class Shooter extends SubsystemBase {
       correctedAngle %= 360;
     }
     return correctedAngle;
+  }
+
+  public void shoot() {
+    topShooter.setVoltage(
+        SmartDashboard.getNumber("Top Shooter Voltage", PowerConstants.SHOOTER_POWER));
+    bottomShooter.setVoltage(
+        SmartDashboard.getNumber("Bottom Shooter Voltage", -PowerConstants.SHOOTER_POWER));
+  }
+
+  public Command shootCommand() {
+    return this.run(() -> shoot());
   }
 }
