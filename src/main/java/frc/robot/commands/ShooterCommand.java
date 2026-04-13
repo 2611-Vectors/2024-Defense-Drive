@@ -1,8 +1,5 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.aux.Intake;
 import frc.robot.subsystems.aux.Shooter;
@@ -16,7 +13,6 @@ public class ShooterCommand extends Command {
   Supplier<Boolean> yButtonSupplier;
   Supplier<Boolean> aButtonSupplier;
   boolean rightTriggerDebounce;
-  private final XboxController driverController = new XboxController(0);
   CommandSwerveDrivetrain m_Drivetrain;
 
   public ShooterCommand(
@@ -31,7 +27,6 @@ public class ShooterCommand extends Command {
     this.intake = intake;
     this.bButtonSupplier = bButtonSupplier;
     this.yButtonSupplier = yButtonSupplier;
-    // Shouldnt it be this.aButtonSupplier = aButtonSupplier; or no?
     this.yButtonSupplier = aButtonSupplier;
     rightTriggerDebounce = false;
 
@@ -39,30 +34,7 @@ public class ShooterCommand extends Command {
   }
 
   @Override
-  public void initialize() {
-    shooter.targetAngle = 187;
-    shooter.enableShooter = false;
-  }
-
-  @Override
-  public void execute() {
-    if (RobotState.isTeleop()) {
-      if (driverController.getRightTriggerAxis() > 0.5) {
-        if (!rightTriggerDebounce) {
-          rightTriggerDebounce = true;
-          m_Drivetrain.resetPose(new Pose2d());
-        }
-      } else {
-        rightTriggerDebounce = false;
-      }
-      shooter.setTiltAngle();
-      if (shooter.enableShooter) {
-        shooter.setShooterVelocity();
-      } else {
-        shooter.stopShooter();
-      }
-    }
-  }
+  public void initialize() {}
 
   @Override
   public void end(boolean interrupted) {

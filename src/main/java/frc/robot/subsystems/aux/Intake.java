@@ -53,7 +53,7 @@ public class Intake extends SubsystemBase {
   public void updateAutoIntake() {
     if (run) {
       if (irSensor.get()) {
-        loadingDrum.set(Constants.PowerConstants.FEED_POWER);
+        loadingDrum.set(Constants.PowerConstants.DRUM_POWER);
         groundPickup.set(Constants.PowerConstants.INTAKE_POWER);
         leftHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
         rightHotwheel.set(-Constants.PowerConstants.INTAKE_POWER);
@@ -76,6 +76,17 @@ public class Intake extends SubsystemBase {
 
   public Command intakeCommand() {
     return this.run(() -> updateAutoIntake());
+  }
+
+  public void dumpIntake() {
+    loadingDrum.set(-Constants.PowerConstants.DRUM_POWER);
+    groundPickup.set(-Constants.PowerConstants.INTAKE_POWER);
+    leftHotwheel.set(-Constants.PowerConstants.INTAKE_POWER);
+    rightHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
+  }
+
+  public Command dumpIntakeCommand() {
+    return this.run(() -> dumpIntake());
   }
 
   @Override
