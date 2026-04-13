@@ -5,13 +5,12 @@
 package frc.robot.subsystems.aux;
 
 import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,26 +27,41 @@ public class Shooter extends SubsystemBase {
   SparkMaxConfig shooterPIDConfig = new SparkMaxConfig();
   // Shooter PID tuning
   public Shooter() {
-    shooterPIDConfig.closedLoop
-      .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .pid(0.0006,0.000001, 0.0000015)
-      .velocityFF(0.0);
+    shooterPIDConfig
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pid(0.0006, 0.000001, 0.0000015)
+        .velocityFF(0.0);
 
-    topShooter.configure(shooterPIDConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    bottomShooter.configure(shooterPIDConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    topShooter.configure(
+        shooterPIDConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    bottomShooter.configure(
+        shooterPIDConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
-  
+
   public void stopShooter() {
     topShooter.setVoltage(0);
     bottomShooter.setVoltage(0);
   }
 
+  public static int SHOOTER_RPM = 60;
+
+  public static final String SHOOTER_RPM_KEY = "Shooter/TargetRPM";
+
+  public static void initDashboard() {
+    SmartDashboard.putNumber(SHOOTER_RPM_KEY, SHOOTER_RPM);
+  }
+
+  public static void updateFromDashboard() {
+    double val = SmartDashboard.getNumber(SHOOTER_RPM_KEY, SHOOTER_RPM);
+    SHOOTER_RPM = (int) Math.round(val);
+  }
+
   public void RPMshoot() {
-    SparkClosedLoopController topShooterPIDController = topShooter.getClosedLoopController(); 
+    SparkClosedLoopController topShooterPIDController = topShooter.getClosedLoopController();
     SparkClosedLoopController bottomShooterPIDController = bottomShooter.getClosedLoopController();
-    // Set bottom and top shooters to 60 rpm (1 a sec)
-    topShooterPIDController.setSetpoint(60, ControlType.kVelocity);
-    bottomShooterPIDController.setSetpoint(60, ControlType.kVelocity);
+    topShooterPIDController.setSetpoint(SHOOTER_RPM, ControlType.kVelocity);
+    bottomShooterPIDController.setSetpoint(SHOOTER_RPM, ControlType.kVelocity);
   }
 
   public Command RPMshootCommand() {

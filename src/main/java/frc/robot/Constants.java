@@ -28,7 +28,6 @@ public class Constants {
     public static final int TILT = 44;
     public static final int TOP_SHOOTER = 61;
     public static final int BOTTOM_SHOOTER = 62;
-    public static final int MAX_SHOOTER_RPM = 3000;
   }
 
   public final class ClimbConstants {

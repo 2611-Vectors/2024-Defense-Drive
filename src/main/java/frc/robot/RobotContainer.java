@@ -128,7 +128,7 @@ public class RobotContainer {
 
     // Runs the RPMshoot command to spin shooter at 60 rpm w/ right bumper (maybe)
     m_DriverController.rightTrigger().whileTrue(m_Shooter.RPMshootCommand());
-    
+
     // Runs intake and shooter backwards w/ left bumper
     m_DriverController.leftTrigger().whileTrue(m_Shooter.dumpShootCommand());
     m_DriverController.leftTrigger().whileTrue(m_Intake.dumpIntakeCommand());
