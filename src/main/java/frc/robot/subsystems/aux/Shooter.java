@@ -26,12 +26,12 @@ public class Shooter extends SubsystemBase {
       new SparkMax(Constants.ShooterConstants.BOTTOM_SHOOTER, SparkMax.MotorType.kBrushless);
 
   SparkMaxConfig shooterPIDConfig = new SparkMaxConfig();
-  
+  // Shooter PID tuning
   public Shooter() {
     shooterPIDConfig.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .pid(0.0,0.0,0.0)
-      .velocityFF(0);
+      .pid(0.0006,0.000001, 0.0000015)
+      .velocityFF(0.0);
 
     topShooter.configure(shooterPIDConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     bottomShooter.configure(shooterPIDConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
