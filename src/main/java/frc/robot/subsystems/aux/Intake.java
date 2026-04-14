@@ -1,7 +1,10 @@
 package frc.robot.subsystems.aux;
 
+import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -26,13 +29,21 @@ public class Intake extends SubsystemBase {
   SparkFlex groundPickup =
       new SparkFlex(Constants.IntakeConstants.GROUND_PICKUP, SparkFlex.MotorType.kBrushless);
 
-  boolean robotRunning;
-
   public Intake() {
-    SparkMaxConfig drumConfig = new SparkMaxConfig();
-    drumConfig.idleMode(IdleMode.kBrake);
+    SparkMaxConfig intakeConfig = new SparkMaxConfig();
+    intakeConfig
+        .idleMode(IdleMode.kBrake)
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+
     loadingDrum.configure(
-        drumConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    leftHotwheel.configure(
+        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    rightHotwheel.configure(
+        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    groundPickup.configure(
+        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void intake() {
@@ -54,6 +65,32 @@ public class Intake extends SubsystemBase {
     groundPickup.set(-Constants.PowerConstants.INTAKE_POWER);
     leftHotwheel.set(-Constants.PowerConstants.INTAKE_POWER);
     rightHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
+  }
+
+  public static int INTAKE_RPM = 60;
+
+  public static void initDashboard() {
+    SmartDashboard.putNumber("Intake/Target RPM", INTAKE_RPM);
+  }
+
+  public static void updateFromDashboard() {
+    double val = SmartDashboard.getNumber("Intake/Target RPM", INTAKE_RPM);
+    INTAKE_RPM = (int) Math.round(val);
+  }
+
+  public void intakeRPM() {
+    SparkClosedLoopController drumPIDController = loadingDrum.getClosedLoopController();
+    SparkClosedLoopController pickupPIDController = groundPickup.getClosedLoopController();
+    SparkClosedLoopController leftHotwheelPIDController = leftHotwheel.getClosedLoopController();
+    SparkClosedLoopController rightHotwheelController = rightHotwheel.getClosedLoopController();
+    drumPIDController.setSetpoint(INTAKE_RPM, ControlType.kVelocity);
+    pickupPIDController.setSetpoint(INTAKE_RPM, ControlType.kVelocity);
+    leftHotwheelPIDController.setSetpoint(INTAKE_RPM, ControlType.kVelocity);
+    rightHotwheelController.setSetpoint(INTAKE_RPM, ControlType.kVelocity);
+  }
+
+  public Command intakeRPMCommand() {
+    return this.run(() -> intakeRPM());
   }
 
   public Command stopIntakeCommand() {

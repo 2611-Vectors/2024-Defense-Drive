@@ -63,6 +63,9 @@ public class Constants {
     public static AprilTagFieldLayout aprilTagLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
+    public static final double FIELD_WIDTH = 16.541;
+    public static final double FIELD_HEIGHT = 8.069;
+
     // No cams yet, these are placeholders
     public static final String leftCam = "Camera1";
     public static final Transform3d robotToLeftCam =
