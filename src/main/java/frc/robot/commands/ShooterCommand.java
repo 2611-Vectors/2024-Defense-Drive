@@ -38,7 +38,7 @@ public class ShooterCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    intake.intakeMotorPower(0);
+    intake.stopIntake();
     shooter.stopShooter();
   }
 

@@ -6,12 +6,23 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
   public static double MAX_SPEED = 5.2;
+
+  public static void initDashboard() {
+    SmartDashboard.putNumber("Drive/Max Speed", MAX_SPEED);
+  }
+
+  public static void updateFromDashboard() {
+    double val = SmartDashboard.getNumber("Drive/Max Speed", MAX_SPEED);
+    MAX_SPEED = Math.round(val);
+  }
+
   public static double NathanSpeed = 2.0;
   public static final double TILT_ANGLE_OFFSET = -25;
   public static final double APRIL_TAG_OFFSET = 1.01237005816;

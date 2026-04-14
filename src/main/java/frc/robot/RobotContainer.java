@@ -10,8 +10,6 @@ import frc.robot.VectorKit.vision.VisionIOPhotonVision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVisionSim;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.aux.Intake;
-import frc.robot.subsystems.aux.Shooter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -22,8 +20,6 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 public class RobotContainer {
   // Subsystems
   private final Drive m_Drive;
-  private final Shooter m_Shooter;
-  private final Intake m_Intake;
 
   @SuppressWarnings("unused")
   private final Vision m_Vision;
@@ -33,9 +29,6 @@ public class RobotContainer {
       new CommandXboxController(Constants.ControllerConstants.DRIVER_CONTROLLER_PORT);
 
   public RobotContainer() {
-    m_Shooter = new Shooter();
-    m_Intake = new Intake();
-
     switch (Constants.currentMode) {
       case REAL:
         m_Drive =
@@ -92,9 +85,9 @@ public class RobotContainer {
     m_Drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             m_Drive,
-            () -> -m_DriverController.getLeftY(),
-            () -> -m_DriverController.getLeftX(),
-            () -> -m_DriverController.getRightX()));
+            () -> -m_DriverController.getLeftY() * Constants.MAX_SPEED,
+            () -> -m_DriverController.getLeftX() * Constants.MAX_SPEED,
+            () -> m_DriverController.getRightX()));
 
     // Lock to 0° when A button is held
     m_DriverController
@@ -119,18 +112,7 @@ public class RobotContainer {
                             new Pose2d(m_Drive.getPose().getTranslation(), Rotation2d.kZero)),
                     m_Drive)
                 .ignoringDisable(true));
-
-    // Intakes unless theres a note blocking the irSensor (if the sensor works)
-    m_DriverController.leftTrigger().whileTrue(m_Intake.intakeCommand());
-
-    // Shoots (hopefully) with right trigger
-    m_DriverController.rightTrigger().whileTrue(m_Shooter.shootCommand());
-
-    // Runs the RPMshoot command to spin shooter at 60 rpm w/ right bumper (maybe)
-    m_DriverController.rightTrigger().whileTrue(m_Shooter.RPMshootCommand());
-
-    // Runs intake and shooter backwards w/ left bumper
-    m_DriverController.leftTrigger().whileTrue(m_Shooter.dumpShootCommand());
-    m_DriverController.leftTrigger().whileTrue(m_Intake.dumpIntakeCommand());
   }
+
+  public void periodic() {}
 }

@@ -7,7 +7,6 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,46 +35,18 @@ public class Intake extends SubsystemBase {
         drumConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void drumPower(double power) {
-    loadingDrum.set(power);
+  public void intake() {
+    loadingDrum.set(Constants.PowerConstants.DRUM_POWER);
+    groundPickup.set(Constants.PowerConstants.INTAKE_POWER);
+    leftHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
+    rightHotwheel.set(-Constants.PowerConstants.INTAKE_POWER);
   }
 
-  public void intakeMotorPower(double power) {
-    groundPickup.set(power);
-    leftHotwheel.set(power);
-    rightHotwheel.set(-power);
-  }
-
-  public void autoIntake() {
-    run = true;
-  }
-
-  public void updateAutoIntake() {
-    if (run) {
-      if (irSensor.get()) {
-        loadingDrum.set(Constants.PowerConstants.DRUM_POWER);
-        groundPickup.set(Constants.PowerConstants.INTAKE_POWER);
-        leftHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
-        rightHotwheel.set(-Constants.PowerConstants.INTAKE_POWER);
-      } else {
-        loadingDrum.set(0.0);
-        groundPickup.set(0.0);
-        leftHotwheel.set(0.0);
-        rightHotwheel.set(0.0);
-      }
-    }
-  }
-
-  public void stopIntakeAndFeed() {
+  public void stopIntake() {
     loadingDrum.set(0.0);
     groundPickup.set(0.0);
     leftHotwheel.set(0.0);
     rightHotwheel.set(0.0);
-    run = false;
-  }
-
-  public Command intakeCommand() {
-    return this.run(() -> updateAutoIntake());
   }
 
   public void dumpIntake() {
@@ -85,6 +56,14 @@ public class Intake extends SubsystemBase {
     rightHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
   }
 
+  public Command stopIntakeCommand() {
+    return this.run(() -> stopIntake());
+  }
+
+  public Command intakeCommand() {
+    return this.run(() -> intake());
+  }
+
   public Command dumpIntakeCommand() {
     return this.run(() -> dumpIntake());
   }
@@ -92,9 +71,5 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("Note In Shooter", !irSensor.get());
-    SmartDashboard.putBoolean("Run Teleop Intake", run);
-    if (RobotState.isTeleop()) {
-      updateAutoIntake();
-    }
   }
 }

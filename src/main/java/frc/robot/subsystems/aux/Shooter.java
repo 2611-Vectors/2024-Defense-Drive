@@ -46,14 +46,12 @@ public class Shooter extends SubsystemBase {
 
   public static int SHOOTER_RPM = 60;
 
-  public static final String SHOOTER_RPM_KEY = "Shooter/TargetRPM";
-
   public static void initDashboard() {
-    SmartDashboard.putNumber(SHOOTER_RPM_KEY, SHOOTER_RPM);
+    SmartDashboard.putNumber("Shooter/TargetRPM", SHOOTER_RPM);
   }
 
   public static void updateFromDashboard() {
-    double val = SmartDashboard.getNumber(SHOOTER_RPM_KEY, SHOOTER_RPM);
+    double val = SmartDashboard.getNumber("Shooter/TargetRPM", SHOOTER_RPM);
     SHOOTER_RPM = (int) Math.round(val);
   }
 
@@ -64,19 +62,9 @@ public class Shooter extends SubsystemBase {
     bottomShooterPIDController.setSetpoint(SHOOTER_RPM, ControlType.kVelocity);
   }
 
-  public Command RPMshootCommand() {
-    return this.run(() -> RPMshoot());
-  }
-
   public void shoot() {
-    topShooter.setVoltage(
-        SmartDashboard.getNumber("Top Shooter Voltage", PowerConstants.SHOOTER_POWER));
-    bottomShooter.setVoltage(
-        SmartDashboard.getNumber("Bottom Shooter Voltage", -PowerConstants.SHOOTER_POWER));
-  }
-
-  public Command shootCommand() {
-    return this.run(() -> shoot());
+    topShooter.setVoltage(PowerConstants.SHOOTER_POWER);
+    bottomShooter.setVoltage(-PowerConstants.SHOOTER_POWER);
   }
 
   public void dumpShoot() {
@@ -86,5 +74,13 @@ public class Shooter extends SubsystemBase {
 
   public Command dumpShootCommand() {
     return this.run(() -> dumpShoot());
+  }
+
+  public Command RPMshootCommand() {
+    return this.run(() -> RPMshoot());
+  }
+
+  public Command shootCommand() {
+    return this.run(() -> shoot());
   }
 }
