@@ -13,6 +13,7 @@ import frc.robot.VectorKit.vision.Vision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVisionSim;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.HandleAutonShoot;
 import frc.robot.commands.PathfindToStart;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.aux.Intake;
@@ -95,9 +96,9 @@ public class RobotContainer {
         break;
     }
 
-    NamedCommands.registerCommand("intake", m_Intake.intakeCommand());
-
     autoChooser = new LoggedDashboardChooser<>("AutoChoices", AutoBuilder.buildAutoChooser());
+
+    NamedCommands.registerCommand("Enable Intake", new HandleAutonShoot(m_Intake, m_Shooter));
 
     configureButtonBindings();
   }
@@ -135,19 +136,15 @@ public class RobotContainer {
                     m_Drive)
                 .ignoringDisable(true));
 
-    // Intakes with left trigger
-    m_DriverController.leftTrigger().whileTrue(m_Intake.intakeCommand());
-
-    // Shoots (hopefully) with right trigger
     m_DriverController.rightTrigger().whileTrue(m_Shooter.shootCommand());
+    m_DriverController.rightTrigger().whileTrue(m_Intake.drumShootCommand());
 
-    // Runs the RPMshoot command to spin shooter at 60 rpm w/ right bumper (maybe)
-    m_DriverController.rightTrigger().whileTrue(m_Shooter.RPMshootCommand());
+    m_DriverController.rightBumper().whileTrue(m_Shooter.stopShootCommand());
+    m_DriverController.rightBumper().whileTrue(m_Intake.stopDrumShootCommand());
 
-    // Runs intake and shooter backwards w/ left bumper
-    m_DriverController.leftTrigger().whileTrue(m_Shooter.dumpShootCommand());
-    m_DriverController.leftTrigger().whileTrue(m_Intake.dumpIntakeCommand());
-    // m_DriverController.leftTrigger().whileTrue(m_Intake.stopIntakeCommand());
+    m_DriverController
+        .leftTrigger()
+        .whileTrue(Commands.startEnd(() -> m_Intake.autoIntake(), () -> m_Intake.stopIntake()));
   }
 
   public Command getAutonomousCommand() {

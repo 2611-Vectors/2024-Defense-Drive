@@ -29,7 +29,6 @@ public class Constants {
   public static final int TEAMSWITCH_ID = 2;
 
   public final class IntakeConstants {
-    public static final int LOADING_DRUM = 43;
     public static final int GROUND_PICKUP = 52;
     public static final int RIGHT_HOTWHEEL = 53;
     public static final int LEFT_HOTWHEEL = 54;
@@ -37,13 +36,14 @@ public class Constants {
 
   public final class ShooterConstants {
     public static final int TILT = 44;
-    public static final int TOP_SHOOTER = 61;
-    public static final int BOTTOM_SHOOTER = 62;
+    public static final int TOP_SHOOTER = 42;
+    public static final int BOTTOM_SHOOTER = 41;
+    public static final int LOADING_DRUM = 43;
   }
 
   public final class ClimbConstants {
-    public static final int RETIRED_CLIMB_A = 41;
-    public static final int RETIRED_CLIMB_B = 42;
+    public static final int RETIRED_CLIMB_A = 61;
+    public static final int RETIRED_CLIMB_B = 62;
   }
 
   public final class ControllerConstants {
@@ -55,7 +55,7 @@ public class Constants {
     public static final double INTAKE_POWER = 0.8;
     public static final double DRUM_POWER = 0.7;
     public static final double MAX_TILT_POWER = 1;
-    public static final double SHOOTER_POWER = 10;
+    public static final double SHOOTER_POWER = 1;
   }
 
   public static class VisionConstants {
