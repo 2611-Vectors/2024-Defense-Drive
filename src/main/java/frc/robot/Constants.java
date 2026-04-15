@@ -13,16 +13,6 @@ public class Constants {
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
   public static double MAX_SPEED = 5.2;
-
-  public static void initDashboard() {
-    SmartDashboard.putNumber("Drive/Max Speed", MAX_SPEED);
-  }
-
-  public static void updateFromDashboard() {
-    double val = SmartDashboard.getNumber("Drive/Max Speed", MAX_SPEED);
-    MAX_SPEED = Math.round(val);
-  }
-
   public static double NathanSpeed = 2.0;
   public static final double TILT_ANGLE_OFFSET = -25;
   public static final double APRIL_TAG_OFFSET = 1.01237005816;
@@ -56,6 +46,19 @@ public class Constants {
     public static final double DRUM_POWER = 0.7;
     public static final double MAX_TILT_POWER = 1;
     public static final double SHOOTER_POWER = 1;
+  }
+
+  public static class DashboardConstants {
+    public static double SHOOTER_TIMEOUT = 3;
+
+    public static void initDashboard() {
+      SmartDashboard.putNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
+    }
+
+    public static void updateFromDashboard() {
+      double val = SmartDashboard.getNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
+      SHOOTER_TIMEOUT = Math.round(val);
+    }
   }
 
   public static class VisionConstants {

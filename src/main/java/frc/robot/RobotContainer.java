@@ -1,13 +1,18 @@
 package frc.robot;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.DashboardConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.VectorKit.vision.Vision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVision;
@@ -15,6 +20,7 @@ import frc.robot.VectorKit.vision.VisionIOPhotonVisionSim;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HandleAutonShoot;
 import frc.robot.commands.PathfindToStart;
+import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.aux.Intake;
 import frc.robot.subsystems.aux.Shooter;
@@ -24,29 +30,40 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
+    private final NetworkTableEntry maxSpeedEntry = NetworkTableInstance.getDefault()
+        .getTable("Robot")
+        .getEntry("MaxSpeed");
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
   // Subsystems
   private final Drive m_Drive;
+  private final Shooter Shooter;
+  private final Intake Intake;
+
+  private final CommandSwerveDrivetrain m_CommandSwerveDrive = TunerConstants.createDrivetrain();
+
 
   @SuppressWarnings("unused")
   private final Vision m_Vision;
 
   // Controller
-  private final CommandXboxController m_DriverController =
+  private final CommandXboxController Controller =
       new CommandXboxController(Constants.ControllerConstants.DRIVER_CONTROLLER_PORT);
 
   // Dashboard Inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
-  // Subsystems
-  private final Shooter m_Shooter;
-  private final Intake m_Intake;
-
   public RobotContainer() {
-    m_Shooter = new Shooter();
-    m_Intake = new Intake();
+    Shooter = new Shooter();
+    Intake = new Intake();
 
     switch (Constants.currentMode) {
       case REAL:
@@ -98,35 +115,50 @@ public class RobotContainer {
 
     autoChooser = new LoggedDashboardChooser<>("AutoChoices", AutoBuilder.buildAutoChooser());
 
-    NamedCommands.registerCommand("Enable Intake", new HandleAutonShoot(m_Intake, m_Shooter));
+    NamedCommands.registerCommand("Enable Intake", new HandleAutonShoot(Intake, Shooter));
 
-    configureButtonBindings();
+        // initialize NetworkTable default value so Advantage Scope (or any
+        // NetworkTables client) will see a sensible starting value.
+        maxSpeedEntry.setDouble(1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+
+        configureBindings();
+    }
+
+  private double getMaxSpeed() {
+    return maxSpeedEntry.getDouble(1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   }
 
-  private void configureButtonBindings() {
+  private void configureBindings() {
     // Default command, normal field-relative drive
-    m_Drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            m_Drive,
-            () -> -m_DriverController.getLeftY() * Constants.MAX_SPEED,
-            () -> -m_DriverController.getLeftX() * Constants.MAX_SPEED,
-            () -> m_DriverController.getRightX()));
+    m_CommandSwerveDrive.setDefaultCommand(
+        m_CommandSwerveDrive.applyRequest(() -> {
+          final double maxSpeed = getMaxSpeed();
+          return new SwerveRequest.FieldCentric()
+              .withDeadband(maxSpeed * 0.1)
+              .withRotationalDeadband(MaxAngularRate * 0.1)
+              .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+              .withVelocityX(-Controller.getLeftY() * maxSpeed) // Drive forward with negative Y (forward)
+              .withVelocityY(-Controller.getLeftX() * maxSpeed) // Drive left with negative X (left)
+              .withRotationalRate(-Controller.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
+        })
+    );
+
 
     // Lock to 0° when A button is held
-    m_DriverController
+    Controller
         .a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 m_Drive,
-                () -> -m_DriverController.getLeftY(),
-                () -> -m_DriverController.getLeftX(),
+                () -> -Controller.getLeftY(),
+                () -> -Controller.getLeftX(),
                 () -> Rotation2d.kZero));
 
     // Switch to X pattern when X button is pressed
-    m_DriverController.x().onTrue(Commands.runOnce(m_Drive::stopWithX, m_Drive));
+    Controller.x().onTrue(Commands.runOnce(m_Drive::stopWithX, m_Drive));
 
     // Reset gyro to 0° when Back button is pressed
-    m_DriverController
+    Controller
         .back()
         .onTrue(
             Commands.runOnce(
@@ -136,15 +168,33 @@ public class RobotContainer {
                     m_Drive)
                 .ignoringDisable(true));
 
-    m_DriverController.rightTrigger().whileTrue(m_Shooter.shootCommand());
-    m_DriverController.rightTrigger().whileTrue(m_Intake.drumShootCommand());
+    // Start/Stop with trigger
+    // Controller.rightTrigger()
+    //     .whileTrue(Commands.startEnd(() -> Shooter.shootCommand(), () -> Shooter.stopShootCommand()));
+    // Controller.rightTrigger()
+    //     .whileTrue(Commands.startEnd(() -> Intake.drumShootCommand(), () -> Intake.stopDrumShootCommand()));
 
-    m_DriverController.rightBumper().whileTrue(m_Shooter.stopShootCommand());
-    m_DriverController.rightBumper().whileTrue(m_Intake.stopDrumShootCommand());
+    // Timeout to let the shooter get up to speed
+    Controller.rightTrigger().whileTrue(Shooter.shootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
+    Controller.rightTrigger().whileTrue(Intake.drumShootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
 
-    m_DriverController
+    // Stop shooter with right bumper
+    Controller.rightBumper().whileTrue(Shooter.stopShootCommand());
+    Controller.rightBumper().whileTrue(Intake.stopDrumShootCommand());
+
+    // Auto intake with left trigger
+    Controller
         .leftTrigger()
-        .whileTrue(Commands.startEnd(() -> m_Intake.autoIntake(), () -> m_Intake.stopIntake()));
+        .whileTrue(Commands.startEnd(() -> Intake.autoIntake(), () -> Intake.stopIntake()));
+    
+    // Dump intake and shooter
+    Controller
+        .leftBumper()
+        .whileTrue(Commands.startEnd(() -> Intake.intakeDumpCommand(), () -> Intake.stopIntakeCommand()));
+    Controller
+        .leftBumper()
+        .whileTrue(Commands.startEnd(() -> Shooter.dumpShootCommand(), () -> Shooter.stopShootCommand()));
+  
   }
 
   public Command getAutonomousCommand() {

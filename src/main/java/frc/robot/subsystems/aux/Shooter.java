@@ -47,8 +47,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void dumpShoot() {
-    topShooter.setVoltage(-5);
-    bottomShooter.setVoltage(5);
+    topShooter.set(-PowerConstants.SHOOTER_POWER);
+    bottomShooter.set(PowerConstants.SHOOTER_POWER);
   }
 
   public Command dumpShootCommand() {

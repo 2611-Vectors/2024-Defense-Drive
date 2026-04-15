@@ -61,26 +61,6 @@ public class Intake extends SubsystemBase {
     loadingDrum.set(Constants.PowerConstants.DRUM_POWER);
   }
 
-  public static double INTAKE_RPM = 60;
-
-  public static void initDashboard() {
-    SmartDashboard.putNumber("Intake/Target RPM", INTAKE_RPM);
-  }
-
-  public static void updateFromDashboard() {
-    double val = SmartDashboard.getNumber("Intake/Target RPM", INTAKE_RPM);
-    INTAKE_RPM = (double) Math.round(val);
-  }
-
-  public void intakeRPM() {
-    SparkClosedLoopController pickupPIDController = groundPickup.getClosedLoopController();
-    SparkClosedLoopController leftHotwheelPIDController = leftHotwheel.getClosedLoopController();
-    SparkClosedLoopController rightHotwheelController = rightHotwheel.getClosedLoopController();
-    pickupPIDController.setSetpoint(60, ControlType.kVelocity);
-    leftHotwheelPIDController.setSetpoint(60, ControlType.kVelocity);
-    rightHotwheelController.setSetpoint(60, ControlType.kVelocity);
-  }
-
   public void autoIntake() {
     run = true;
   }
@@ -149,6 +129,17 @@ public class Intake extends SubsystemBase {
 
   public Command stopIntakeCommand() {
     return this.run(() -> stopIntake());
+  }
+
+  public void intakeDump() {
+    loadingDrum.set(-PowerConstants.DRUM_POWER);
+    groundPickup.set(-PowerConstants.INTAKE_POWER);
+    leftHotwheel.set(-PowerConstants.INTAKE_POWER);
+    rightHotwheel.set(PowerConstants.INTAKE_POWER);
+  }
+
+  public Command intakeDumpCommand() {
+    return this.run(() -> intakeDump());
   }
 
   @Override
