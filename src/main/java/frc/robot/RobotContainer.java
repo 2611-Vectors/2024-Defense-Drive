@@ -15,6 +15,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DashboardConstants;
 import frc.robot.Constants.VisionConstants;
@@ -59,6 +60,16 @@ public class RobotContainer {
 
   // Dashboard Inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  // Test Command
+  public Command timeoutShoot() {
+    return new SequentialCommandGroup(
+        Shooter.shootCommand(),
+        Intake.stopDrumShootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT),
+        Intake.drumShootCommand(),
+        Shooter.stopShootCommand(),
+        Intake.stopDrumShootCommand());
+  }
 
   public RobotContainer() {
     Shooter = new Shooter();
@@ -168,19 +179,17 @@ public class RobotContainer {
                     m_Drive)
                 .ignoringDisable(true));
 
-    // Start/Stop with right trigger
-    // Controller.rightTrigger()
-    //     .whileTrue(Commands.startEnd(() -> Shooter.shootCommand(), () ->
-    // Shooter.stopShootCommand()));
-    // Controller.rightTrigger()
-    //     .whileTrue(Commands.startEnd(() -> Intake.drumShootCommand(), () ->
-    // Intake.stopDrumShootCommand()));
+    // Start/Stop with right trigger (rebound to d-pad up for testing)
+    Controller.povUp()
+        .whileTrue(
+            Commands.startEnd(() -> Shooter.shootCommand(), () -> Shooter.stopShootCommand()));
+    Controller.povUp()
+        .whileTrue(
+            Commands.startEnd(
+                () -> Intake.drumShootCommand(), () -> Intake.stopDrumShootCommand()));
 
     // Timeout to let the shooter get up to speed with right trigger
-    Controller.rightTrigger()
-        .whileTrue(Shooter.shootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
-    Controller.rightTrigger()
-        .whileTrue(Intake.drumShootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
+    Controller.rightTrigger().whileTrue(timeoutShoot());
 
     // Stop shooter with right bumper
     Controller.rightBumper().whileTrue(Shooter.stopShootCommand());

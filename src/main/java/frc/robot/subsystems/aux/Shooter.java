@@ -33,10 +33,9 @@ public class Shooter extends SubsystemBase {
     shooterConfig
         .idleMode(IdleMode.kBrake)
         .closedLoop
+        .pidf(
+            DashboardConstants.P, DashboardConstants.I, DashboardConstants.D, DashboardConstants.FF)
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .p(DashboardConstants.P)
-        .i(DashboardConstants.I)
-        .d(DashboardConstants.D)
         .outputRange(-1, 1);
 
     topShooter.configure(

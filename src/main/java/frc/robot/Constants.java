@@ -54,6 +54,7 @@ public class Constants {
     public static int P = 0;
     public static int I = 0;
     public static int D = 0;
+    public static int FF = 0;
 
     public static double SHOOTER_RPM = 60;
 
@@ -63,6 +64,7 @@ public class Constants {
       SmartDashboard.putNumber("Shooter/Shooter PID/P", P);
       SmartDashboard.putNumber("Shooter/Shooter PID/I", I);
       SmartDashboard.putNumber("Shooter/Shooter PID/D", D);
+      SmartDashboard.putNumber("Shooter/Shooter PID/ FF", FF);
 
       SmartDashboard.putNumber("Shooter/Shooter RPM", SHOOTER_RPM);
     }
@@ -75,9 +77,11 @@ public class Constants {
       int dashboardP = (int) SmartDashboard.getNumber("Shooter/Shooter PID/P", P);
       int dashboardI = (int) SmartDashboard.getNumber("Shooter/Shooter PID/I", I);
       int dashboardD = (int) SmartDashboard.getNumber("Shooter/Shooter PID/D", D);
+      int dashboardFF = (int) SmartDashboard.getNumber("Shooter/Shooter PID/FF", FF);
       P = dashboardP;
       D = dashboardD;
       I = dashboardI;
+      FF = dashboardFF;
 
       double dashboardRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", SHOOTER_RPM);
       SHOOTER_RPM = Math.round(dashboardRPM);
