@@ -51,13 +51,36 @@ public class Constants {
   public static class DashboardConstants {
     public static double SHOOTER_TIMEOUT = 3;
 
+    public static int P = 0;
+    public static int I = 0;
+    public static int D = 0;
+
+    public static double SHOOTER_RPM = 60;
+
     public static void initDashboard() {
       SmartDashboard.putNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
+
+      SmartDashboard.putNumber("Shooter/Shooter PID/P", P);
+      SmartDashboard.putNumber("Shooter/Shooter PID/I", I);
+      SmartDashboard.putNumber("Shooter/Shooter PID/D", D);
+
+      SmartDashboard.putNumber("Shooter/Shooter RPM", SHOOTER_RPM);
     }
 
     public static void updateFromDashboard() {
-      double val = SmartDashboard.getNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
-      SHOOTER_TIMEOUT = Math.round(val);
+      double dashboardTimeout =
+          SmartDashboard.getNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
+      SHOOTER_TIMEOUT = Math.round(dashboardTimeout);
+
+      int dashboardP = (int) SmartDashboard.getNumber("Shooter/Shooter PID/P", P);
+      int dashboardI = (int) SmartDashboard.getNumber("Shooter/Shooter PID/I", I);
+      int dashboardD = (int) SmartDashboard.getNumber("Shooter/Shooter PID/D", D);
+      P = dashboardP;
+      D = dashboardD;
+      I = dashboardI;
+
+      double dashboardRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", SHOOTER_RPM);
+      SHOOTER_RPM = Math.round(dashboardRPM);
     }
   }
 

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.DashboardConstants;
 import frc.robot.Constants.PowerConstants;
 
 @SuppressWarnings("removal")
@@ -32,26 +33,33 @@ public class Intake extends SubsystemBase {
   SparkMax loadingDrum =
       new SparkMax(Constants.ShooterConstants.LOADING_DRUM, SparkMax.MotorType.kBrushless);
 
+  SparkClosedLoopController drumController = loadingDrum.getClosedLoopController();
+
   public Intake() {
     SparkMaxConfig intakeConfig = new SparkMaxConfig();
-    intakeConfig
-        .idleMode(IdleMode.kBrake)
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    SparkFlexConfig pickupConfig = new SparkFlexConfig();
-    pickupConfig
-        .idleMode(IdleMode.kBrake)
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    intakeConfig.idleMode(IdleMode.kBrake);
 
-    loadingDrum.configure(
-        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    SparkFlexConfig pickupConfig = new SparkFlexConfig();
+    pickupConfig.idleMode(IdleMode.kBrake);
+
+    SparkMaxConfig drumConfig = new SparkMaxConfig();
+    drumConfig
+        .idleMode(IdleMode.kBrake)
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .p(DashboardConstants.P)
+        .i(DashboardConstants.I)
+        .d(DashboardConstants.D)
+        .outputRange(-1, 1);
+
     leftHotwheel.configure(
         intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightHotwheel.configure(
         intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     groundPickup.configure(
         pickupConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    loadingDrum.configure(
+        drumConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void intake() {
@@ -117,6 +125,14 @@ public class Intake extends SubsystemBase {
 
   public Command drumShootCommand() {
     return this.run(() -> drumShoot());
+  }
+
+  public void drumRPMShoot() {
+    drumController.setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
+  }
+
+  public Command drumRPMShootCommand() {
+    return this.run(() -> drumRPMShoot());
   }
 
   public void stopDrumShoot() {

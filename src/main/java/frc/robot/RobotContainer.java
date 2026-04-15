@@ -1,7 +1,11 @@
 package frc.robot;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -20,28 +24,24 @@ import frc.robot.VectorKit.vision.VisionIOPhotonVisionSim;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HandleAutonShoot;
 import frc.robot.commands.PathfindToStart;
-import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.aux.Intake;
 import frc.robot.subsystems.aux.Shooter;
+import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
-    private final NetworkTableEntry maxSpeedEntry = NetworkTableInstance.getDefault()
-        .getTable("Robot")
-        .getEntry("MaxSpeed");
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+  private final NetworkTableEntry maxSpeedEntry =
+      NetworkTableInstance.getDefault().getTable("Robot").getEntry("MaxSpeed");
+  private double MaxAngularRate =
+      RotationsPerSecond.of(0.75)
+          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
   // Subsystems
   private final Drive m_Drive;
@@ -49,7 +49,6 @@ public class RobotContainer {
   private final Intake Intake;
 
   private final CommandSwerveDrivetrain m_CommandSwerveDrive = TunerConstants.createDrivetrain();
-
 
   @SuppressWarnings("unused")
   private final Vision m_Vision;
@@ -117,12 +116,12 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("Enable Intake", new HandleAutonShoot(Intake, Shooter));
 
-        // initialize NetworkTable default value so Advantage Scope (or any
-        // NetworkTables client) will see a sensible starting value.
-        maxSpeedEntry.setDouble(1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+    // initialize NetworkTable default value so Advantage Scope (or any
+    // NetworkTables client) will see a sensible starting value.
+    maxSpeedEntry.setDouble(1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
-        configureBindings();
-    }
+    configureBindings();
+  }
 
   private double getMaxSpeed() {
     return maxSpeedEntry.getDouble(1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
@@ -131,22 +130,24 @@ public class RobotContainer {
   private void configureBindings() {
     // Default command, normal field-relative drive
     m_CommandSwerveDrive.setDefaultCommand(
-        m_CommandSwerveDrive.applyRequest(() -> {
-          final double maxSpeed = getMaxSpeed();
-          return new SwerveRequest.FieldCentric()
-              .withDeadband(maxSpeed * 0.1)
-              .withRotationalDeadband(MaxAngularRate * 0.1)
-              .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-              .withVelocityX(-Controller.getLeftY() * maxSpeed) // Drive forward with negative Y (forward)
-              .withVelocityY(-Controller.getLeftX() * maxSpeed) // Drive left with negative X (left)
-              .withRotationalRate(-Controller.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
-        })
-    );
-
+        m_CommandSwerveDrive.applyRequest(
+            () -> {
+              final double maxSpeed = getMaxSpeed();
+              return new SwerveRequest.FieldCentric()
+                  .withDeadband(maxSpeed * 0.1)
+                  .withRotationalDeadband(MaxAngularRate * 0.1)
+                  .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                  .withVelocityX(
+                      -Controller.getLeftY() * maxSpeed) // Drive forward with negative Y (forward)
+                  .withVelocityY(
+                      -Controller.getLeftX() * maxSpeed) // Drive left with negative X (left)
+                  .withRotationalRate(
+                      -Controller.getRightX()
+                          * MaxAngularRate); // Drive counterclockwise with negative X (left)
+            }));
 
     // Lock to 0° when A button is held
-    Controller
-        .a()
+    Controller.a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 m_Drive,
@@ -158,8 +159,7 @@ public class RobotContainer {
     Controller.x().onTrue(Commands.runOnce(m_Drive::stopWithX, m_Drive));
 
     // Reset gyro to 0° when Back button is pressed
-    Controller
-        .back()
+    Controller.back()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -168,33 +168,44 @@ public class RobotContainer {
                     m_Drive)
                 .ignoringDisable(true));
 
-    // Start/Stop with trigger
+    // Start/Stop with right trigger
     // Controller.rightTrigger()
-    //     .whileTrue(Commands.startEnd(() -> Shooter.shootCommand(), () -> Shooter.stopShootCommand()));
+    //     .whileTrue(Commands.startEnd(() -> Shooter.shootCommand(), () ->
+    // Shooter.stopShootCommand()));
     // Controller.rightTrigger()
-    //     .whileTrue(Commands.startEnd(() -> Intake.drumShootCommand(), () -> Intake.stopDrumShootCommand()));
+    //     .whileTrue(Commands.startEnd(() -> Intake.drumShootCommand(), () ->
+    // Intake.stopDrumShootCommand()));
 
-    // Timeout to let the shooter get up to speed
-    Controller.rightTrigger().whileTrue(Shooter.shootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
-    Controller.rightTrigger().whileTrue(Intake.drumShootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
+    // Timeout to let the shooter get up to speed with right trigger
+    Controller.rightTrigger()
+        .whileTrue(Shooter.shootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
+    Controller.rightTrigger()
+        .whileTrue(Intake.drumShootCommand().withTimeout(DashboardConstants.SHOOTER_TIMEOUT));
 
     // Stop shooter with right bumper
     Controller.rightBumper().whileTrue(Shooter.stopShootCommand());
     Controller.rightBumper().whileTrue(Intake.stopDrumShootCommand());
 
     // Auto intake with left trigger
-    Controller
-        .leftTrigger()
+    Controller.leftTrigger()
         .whileTrue(Commands.startEnd(() -> Intake.autoIntake(), () -> Intake.stopIntake()));
-    
+
     // Dump intake and shooter
-    Controller
-        .leftBumper()
-        .whileTrue(Commands.startEnd(() -> Intake.intakeDumpCommand(), () -> Intake.stopIntakeCommand()));
-    Controller
-        .leftBumper()
-        .whileTrue(Commands.startEnd(() -> Shooter.dumpShootCommand(), () -> Shooter.stopShootCommand()));
-  
+    Controller.leftBumper()
+        .whileTrue(
+            Commands.startEnd(() -> Intake.intakeDumpCommand(), () -> Intake.stopIntakeCommand()));
+    Controller.leftBumper()
+        .whileTrue(
+            Commands.startEnd(() -> Shooter.dumpShootCommand(), () -> Shooter.stopShootCommand()));
+
+    // RPM shoot command with d-pad up
+    Controller.povDown()
+        .whileTrue(
+            Commands.startEnd(() -> Shooter.RPMShootCommand(), () -> Shooter.stopShootCommand()));
+    Controller.povDown()
+        .whileTrue(
+            Commands.startEnd(
+                () -> Intake.drumRPMShootCommand(), () -> Intake.stopDrumShootCommand()));
   }
 
   public Command getAutonomousCommand() {
