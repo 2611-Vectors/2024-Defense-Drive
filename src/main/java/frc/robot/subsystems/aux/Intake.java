@@ -127,7 +127,10 @@ public class Intake extends SubsystemBase {
   }
 
   public void drumRPMShoot() {
-    drumController.setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
+    // Command the loading drum's closed-loop controller to the dashboard RPM
+    loadingDrum
+        .getClosedLoopController()
+        .setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
   }
 
   public Command drumRPMShootCommand() {
@@ -144,17 +147,6 @@ public class Intake extends SubsystemBase {
 
   public Command stopIntakeCommand() {
     return this.run(() -> stopIntake());
-  }
-
-  public void intakeDump() {
-    loadingDrum.set(-PowerConstants.DRUM_POWER);
-    groundPickup.set(-PowerConstants.INTAKE_POWER);
-    leftHotwheel.set(-PowerConstants.INTAKE_POWER);
-    rightHotwheel.set(PowerConstants.INTAKE_POWER);
-  }
-
-  public Command intakeDumpCommand() {
-    return this.run(() -> intakeDump());
   }
 
   @Override

@@ -9,14 +9,14 @@ import frc.robot.Constants.PowerConstants;
 import frc.robot.subsystems.aux.Intake;
 import frc.robot.subsystems.aux.Shooter;
 
-public class HandleAutonShoot extends Command {
+public class HandleAutoShoot extends Command {
   /** Creates a new HandleAutonShoot. */
   Intake intake;
 
   Shooter shooter;
   boolean isNote;
 
-  public HandleAutonShoot(Intake intake, Shooter shooter) {
+  public HandleAutoShoot(Intake intake, Shooter shooter) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(intake);
     this.intake = intake;

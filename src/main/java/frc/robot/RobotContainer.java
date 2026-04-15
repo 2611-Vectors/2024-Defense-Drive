@@ -23,7 +23,7 @@ import frc.robot.VectorKit.vision.Vision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVisionSim;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.HandleAutonShoot;
+import frc.robot.commands.HandleAutoShoot;
 import frc.robot.commands.PathfindToStart;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.aux.Intake;
@@ -125,7 +125,7 @@ public class RobotContainer {
 
     autoChooser = new LoggedDashboardChooser<>("AutoChoices", AutoBuilder.buildAutoChooser());
 
-    NamedCommands.registerCommand("Enable Intake", new HandleAutonShoot(Intake, Shooter));
+    NamedCommands.registerCommand("Enable Intake", new HandleAutoShoot(Intake, Shooter));
 
     // initialize NetworkTable default value so Advantage Scope (or any
     // NetworkTables client) will see a sensible starting value.
@@ -181,12 +181,9 @@ public class RobotContainer {
 
     // Start/Stop with right trigger (rebound to d-pad up for testing)
     Controller.povUp()
-        .whileTrue(
-            Commands.startEnd(() -> Shooter.shootCommand(), () -> Shooter.stopShootCommand()));
+        .whileTrue(Commands.startEnd(() -> Shooter.shoot(), () -> Shooter.stopShooter()));
     Controller.povUp()
-        .whileTrue(
-            Commands.startEnd(
-                () -> Intake.drumShootCommand(), () -> Intake.stopDrumShootCommand()));
+        .whileTrue(Commands.startEnd(() -> Intake.drumShoot(), () -> Intake.stopDrumShoot()));
 
     // Timeout to let the shooter get up to speed with right trigger
     Controller.rightTrigger().whileTrue(timeoutShoot());
@@ -199,22 +196,9 @@ public class RobotContainer {
     Controller.leftTrigger()
         .whileTrue(Commands.startEnd(() -> Intake.autoIntake(), () -> Intake.stopIntake()));
 
-    // Dump intake and shooter
-    Controller.leftBumper()
-        .whileTrue(
-            Commands.startEnd(() -> Intake.intakeDumpCommand(), () -> Intake.stopIntakeCommand()));
-    Controller.leftBumper()
-        .whileTrue(
-            Commands.startEnd(() -> Shooter.dumpShootCommand(), () -> Shooter.stopShootCommand()));
-
-    // RPM shoot command with d-pad up
-    Controller.povDown()
-        .whileTrue(
-            Commands.startEnd(() -> Shooter.RPMShootCommand(), () -> Shooter.stopShootCommand()));
-    Controller.povDown()
-        .whileTrue(
-            Commands.startEnd(
-                () -> Intake.drumRPMShootCommand(), () -> Intake.stopDrumShootCommand()));
+    // RPM shoot command with d-pad down
+    Controller.povDown().whileTrue(Shooter.RPMShootCommand(DashboardConstants.SHOOTER_RPM));
+    // Controller.povDown().whileTrue(Intake.drumRPMShootCommand());
   }
 
   public Command getAutonomousCommand() {

@@ -62,21 +62,31 @@ public class Shooter extends SubsystemBase {
     return this.run(() -> shoot());
   }
 
-  public void RPMShoot() {
+  public void RPMShoot(Double SHOOTER_RPM) {
+    // Command the loading drum's closed-loop controller to the dashboard RPM
     topShooterController.setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
     bottomShooterController.setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
   }
 
-  public Command RPMShootCommand() {
-    return this.run(() -> RPMShoot());
+  public Command RPMShootCommand(Double SHOOTER_RPM) {
+    return this.run(() -> RPMShoot(SHOOTER_RPM));
   }
 
-  public void dumpShoot() {
-    topShooter.set(-PowerConstants.SHOOTER_POWER);
-    bottomShooter.set(PowerConstants.SHOOTER_POWER);
-  }
+  @Override
+  public void periodic() {
+    // Update PID gains from dashboard values if they change
+    SparkFlexConfig shooterConfig = new SparkFlexConfig();
+    shooterConfig
+        .idleMode(IdleMode.kBrake)
+        .closedLoop
+        .pidf(
+            DashboardConstants.P, DashboardConstants.I, DashboardConstants.D, DashboardConstants.FF)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .outputRange(-1, 1);
 
-  public Command dumpShootCommand() {
-    return this.run(() -> dumpShoot());
+    topShooter.configure(
+        shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    bottomShooter.configure(
+        shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 }

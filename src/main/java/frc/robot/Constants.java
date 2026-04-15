@@ -51,10 +51,15 @@ public class Constants {
   public static class DashboardConstants {
     public static double SHOOTER_TIMEOUT = 3;
 
-    public static int P = 0;
-    public static int I = 0;
-    public static int D = 0;
-    public static int FF = 0;
+    // Shooter PID tuning - start with these values and adjust on dashboard
+    // P: Proportional gain - increase if response is slow, decrease if oscillating
+    // I: Integral gain - helps eliminate steady-state error (usually 0 or very small)
+    // D: Derivative gain - adds damping to prevent overshoot
+    // FF: Feedforward - critical for velocity control, roughly 12V / max_rpm
+    public static double P = 0.0001;
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double FF = 0.00024; // Adjust based on your shooter max RPM
 
     public static double SHOOTER_RPM = 60;
 
@@ -74,10 +79,10 @@ public class Constants {
           SmartDashboard.getNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
       SHOOTER_TIMEOUT = Math.round(dashboardTimeout);
 
-      int dashboardP = (int) SmartDashboard.getNumber("Shooter/Shooter PID/P", P);
-      int dashboardI = (int) SmartDashboard.getNumber("Shooter/Shooter PID/I", I);
-      int dashboardD = (int) SmartDashboard.getNumber("Shooter/Shooter PID/D", D);
-      int dashboardFF = (int) SmartDashboard.getNumber("Shooter/Shooter PID/FF", FF);
+      double dashboardP = SmartDashboard.getNumber("Shooter/Shooter PID/P", P);
+      double dashboardI = SmartDashboard.getNumber("Shooter/Shooter PID/I", I);
+      double dashboardD = SmartDashboard.getNumber("Shooter/Shooter PID/D", D);
+      double dashboardFF = SmartDashboard.getNumber("Shooter/Shooter PID/ FF", FF);
       P = dashboardP;
       D = dashboardD;
       I = dashboardI;
