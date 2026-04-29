@@ -1,12 +1,16 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Constants {
   public static final Mode simMode = Mode.SIM;
@@ -15,8 +19,6 @@ public class Constants {
   public static double MAX_SPEED = 5.2;
   public static double NathanSpeed = 2.0;
   public static final double TILT_ANGLE_OFFSET = -25;
-  public static final double APRIL_TAG_OFFSET = 1.01237005816;
-  public static final int TEAMSWITCH_ID = 2;
 
   public final class IntakeConstants {
     public static final int GROUND_PICKUP = 52;
@@ -31,66 +33,18 @@ public class Constants {
     public static final int LOADING_DRUM = 43;
   }
 
-  public final class ClimbConstants {
-    public static final int RETIRED_CLIMB_A = 61;
-    public static final int RETIRED_CLIMB_B = 62;
-  }
-
-  public final class ControllerConstants {
-    public static final int DRIVER_CONTROLLER_PORT = 0;
-    public static final int OPERATOR_CONTROLLER_PORT = 1;
+  public static class ControllerConstants {
+    public static final int DRIVER_CONTROLLER_ID = 0;
+    public static final int OPERATOR_CONTROLLER_ID = 1;
+    public static final LinearVelocity MAX_DRIVE_SPEED = MetersPerSecond.of(3.25);
+    public static final AngularVelocity MAX_TURN_SPEED = DegreesPerSecond.of(270.0);
   }
 
   public final class PowerConstants {
     public static final double INTAKE_POWER = 0.8;
-    public static final double DRUM_POWER = 0.7;
+    public static final double DRUM_VELOCITY = 4000;
     public static final double MAX_TILT_POWER = 1;
-    public static final double SHOOTER_POWER = 1;
-  }
-
-  public static class DashboardConstants {
-    public static double SHOOTER_TIMEOUT = 3;
-
-    // Shooter PID tuning - start with these values and adjust on dashboard
-    // P: Proportional gain - increase if response is slow, decrease if oscillating
-    // I: Integral gain - helps eliminate steady-state error (usually 0 or very small)
-    // D: Derivative gain - adds damping to prevent overshoot
-    // FF: Feedforward - critical for velocity control, roughly 12V / max_rpm
-    public static double P = 0.0001;
-    public static double I = 0.0;
-    public static double D = 0.0;
-    public static double FF = 0.00024; // Adjust based on your shooter max RPM
-
-    public static double SHOOTER_RPM = 60;
-
-    public static void initDashboard() {
-      SmartDashboard.putNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
-
-      SmartDashboard.putNumber("Shooter/Shooter PID/P", P);
-      SmartDashboard.putNumber("Shooter/Shooter PID/I", I);
-      SmartDashboard.putNumber("Shooter/Shooter PID/D", D);
-      SmartDashboard.putNumber("Shooter/Shooter PID/ FF", FF);
-
-      SmartDashboard.putNumber("Shooter/Shooter RPM", SHOOTER_RPM);
-    }
-
-    public static void updateFromDashboard() {
-      double dashboardTimeout =
-          SmartDashboard.getNumber("Shooter/Shooter Timeout", SHOOTER_TIMEOUT);
-      SHOOTER_TIMEOUT = Math.round(dashboardTimeout);
-
-      double dashboardP = SmartDashboard.getNumber("Shooter/Shooter PID/P", P);
-      double dashboardI = SmartDashboard.getNumber("Shooter/Shooter PID/I", I);
-      double dashboardD = SmartDashboard.getNumber("Shooter/Shooter PID/D", D);
-      double dashboardFF = SmartDashboard.getNumber("Shooter/Shooter PID/ FF", FF);
-      P = dashboardP;
-      D = dashboardD;
-      I = dashboardI;
-      FF = dashboardFF;
-
-      double dashboardRPM = SmartDashboard.getNumber("Shooter/Shooter RPM", SHOOTER_RPM);
-      SHOOTER_RPM = Math.round(dashboardRPM);
-    }
+    public static final double SHOOTER_VELOCITY = 1000;
   }
 
   public static class VisionConstants {

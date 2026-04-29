@@ -1,160 +1,63 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkMax;
+import static edu.wpi.first.units.Units.RPM;
+
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.DashboardConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.PowerConstants;
+import frc.robot.Constants.ShooterConstants;
+import frc.robot.VectorKit.hardware.Neo;
+import frc.robot.VectorKit.hardware.Vortex;
+import frc.robot.VectorKit.tuners.PidTuner;
 
-@SuppressWarnings("removal")
 public class Intake extends SubsystemBase {
-  boolean run;
-
   public DigitalInput irSensor = new DigitalInput(1);
-  SparkMax leftHotwheel =
-      new SparkMax(Constants.IntakeConstants.LEFT_HOTWHEEL, SparkMax.MotorType.kBrushless);
-  SparkMax rightHotwheel =
-      new SparkMax(Constants.IntakeConstants.RIGHT_HOTWHEEL, SparkMax.MotorType.kBrushless);
-  SparkFlex groundPickup =
-      new SparkFlex(Constants.IntakeConstants.GROUND_PICKUP, SparkFlex.MotorType.kBrushless);
-  SparkMax loadingDrum =
-      new SparkMax(Constants.ShooterConstants.LOADING_DRUM, SparkMax.MotorType.kBrushless);
 
-  SparkClosedLoopController drumController = loadingDrum.getClosedLoopController();
+  private final Vortex groundPickup = new Vortex(IntakeConstants.GROUND_PICKUP);
+  private final Neo leftHotwheel = new Neo(IntakeConstants.LEFT_HOTWHEEL);
+  private final Neo rightHotwheel = new Neo(IntakeConstants.RIGHT_HOTWHEEL);
+  private final Neo loadingDrum = new Neo(ShooterConstants.LOADING_DRUM);
+
+  private final PidTuner drumTuner = new PidTuner("/Loading Drum/Tuning", 0.1, 0.0, 0.0, 0.0, 0.0);
 
   public Intake() {
     SparkMaxConfig intakeConfig = new SparkMaxConfig();
     intakeConfig.idleMode(IdleMode.kBrake);
 
-    SparkFlexConfig pickupConfig = new SparkFlexConfig();
-    pickupConfig.idleMode(IdleMode.kBrake);
+    groundPickup.setBrakeMode(true);
+    leftHotwheel.setBrakeMode(true);
+    rightHotwheel.setBrakeMode(true);
+    loadingDrum.setBrakeMode(true);
 
-    SparkMaxConfig drumConfig = new SparkMaxConfig();
-    drumConfig
-        .idleMode(IdleMode.kBrake)
-        .closedLoop
-        .pidf(
-            DashboardConstants.P, DashboardConstants.I, DashboardConstants.D, DashboardConstants.FF)
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .outputRange(-1, 1);
+    leftHotwheel.addFollower(rightHotwheel, Neo.MotorAlignmentValue.Opposed);
 
-    leftHotwheel.configure(
-        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    rightHotwheel.configure(
-        intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    groundPickup.configure(
-        pickupConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    loadingDrum.configure(
-        drumConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    loadingDrum.addTuner(drumTuner);
   }
 
-  public void intake() {
-    groundPickup.set(Constants.PowerConstants.INTAKE_POWER);
-    leftHotwheel.set(Constants.PowerConstants.INTAKE_POWER);
-    rightHotwheel.set(-Constants.PowerConstants.INTAKE_POWER);
-    loadingDrum.set(Constants.PowerConstants.DRUM_POWER);
+  public Command intake() {
+    return new ParallelCommandGroup(
+            groundPickup.set(() -> PowerConstants.INTAKE_POWER),
+            leftHotwheel.set(() -> PowerConstants.INTAKE_POWER),
+            loadingDrum.setVelocity(() -> PowerConstants.DRUM_VELOCITY, () -> RPM))
+        .onlyWhile(() -> !irSensor.get())
+        .andThen(() -> stopAll()).handleInterrupt();
   }
 
-  public void autoIntake() {
-    run = true;
-  }
-
-  public void updateAutoIntake() {
-    if (run) {
-      if (irSensor.get()) {
-        loadingDrum.set(PowerConstants.DRUM_POWER);
-        groundPickup.set(PowerConstants.INTAKE_POWER);
-        leftHotwheel.set(PowerConstants.INTAKE_POWER);
-        rightHotwheel.set(-PowerConstants.INTAKE_POWER);
-      } else {
-        loadingDrum.set(0.0);
-        groundPickup.set(0.0);
-        leftHotwheel.set(0.0);
-        rightHotwheel.set(0.0);
-      }
-    }
-  }
-
-  public void stopIntake() {
-    loadingDrum.set(0.0);
-    groundPickup.set(0.0);
-    leftHotwheel.set(0.0);
-    rightHotwheel.set(0.0);
-    run = false;
-  }
-
-  public Command autoIntakeCommand() {
-    return this.run(() -> autoIntake());
-  }
-
-  public void feedMotorPower(double power) {
-    loadingDrum.set(power);
-  }
-
-  public void intakeMotorPower(double power) {
-    groundPickup.set(power);
-    leftHotwheel.set(power);
-    rightHotwheel.set(-power);
-  }
-
-  public void stopIntakeAndFeed() {
-    loadingDrum.set(0.0);
-    groundPickup.set(0.0);
-    leftHotwheel.set(0.0);
-    rightHotwheel.set(0.0);
-    run = false;
-  }
-
-  public void drumShoot() {
-    loadingDrum.set(PowerConstants.SHOOTER_POWER);
-  }
-
-  public Command drumShootCommand() {
-    return this.run(() -> drumShoot());
-  }
-
-  public void drumRPMShoot() {
-    // Command the loading drum's closed-loop controller to the dashboard RPM
-    loadingDrum
-        .getClosedLoopController()
-        .setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
-  }
-
-  public Command drumRPMShootCommand() {
-    return this.run(() -> drumRPMShoot());
-  }
-
-  public void stopDrumShoot() {
-    loadingDrum.set(0);
-  }
-
-  public Command stopDrumShootCommand() {
-    return this.run(() -> stopDrumShoot());
-  }
-
-  public Command stopIntakeCommand() {
-    return this.run(() -> stopIntake());
+  private void stopAll() {
+        Commands.runOnce(groundPickup.set(() -> 0.0));
+        leftHotwheel.set(() -> 0.0);
+        loadingDrum.setVelocity(() -> 0.0, () -> RPM);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("Run Teleop Intake", run);
     SmartDashboard.putBoolean("Note In Shooter", !irSensor.get());
-    if (RobotState.isTeleop()) {
-      updateAutoIntake();
-    }
   }
 }

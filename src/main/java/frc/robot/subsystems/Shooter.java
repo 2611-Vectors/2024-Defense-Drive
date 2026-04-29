@@ -4,89 +4,41 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
+import static edu.wpi.first.units.Units.RPM;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.DashboardConstants;
 import frc.robot.Constants.PowerConstants;
+import frc.robot.Constants.ShooterConstants;
+import frc.robot.VectorKit.hardware.Vortex;
+import frc.robot.VectorKit.hardware.Vortex.MotorAlignmentValue;
+import frc.robot.VectorKit.tuners.PidTuner;
 
-@SuppressWarnings("removal")
 public class Shooter extends SubsystemBase {
-  SparkFlex topShooter =
-      new SparkFlex(Constants.ShooterConstants.TOP_SHOOTER, SparkFlex.MotorType.kBrushless);
-  SparkFlex bottomShooter =
-      new SparkFlex(Constants.ShooterConstants.BOTTOM_SHOOTER, SparkFlex.MotorType.kBrushless);
+  private final Vortex topShooter = new Vortex(ShooterConstants.TOP_SHOOTER);
+  private final Vortex bottomShooter = new Vortex(ShooterConstants.BOTTOM_SHOOTER);
 
-  SparkClosedLoopController topShooterController = topShooter.getClosedLoopController();
-  SparkClosedLoopController bottomShooterController = bottomShooter.getClosedLoopController();
+  private final PidTuner shooterPidTuner = new PidTuner("/Shooter/Tuning", 0, 0, 0, 0, 0);
 
   public Shooter() {
-    SparkFlexConfig shooterConfig = new SparkFlexConfig();
-    shooterConfig
-        .idleMode(IdleMode.kBrake)
-        .closedLoop
-        .pidf(
-            DashboardConstants.P, DashboardConstants.I, DashboardConstants.D, DashboardConstants.FF)
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .outputRange(-1, 1);
+    topShooter.setBrakeMode(false);
+    bottomShooter.setBrakeMode(false);
 
-    topShooter.configure(
-        shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    bottomShooter.configure(
-        shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    topShooter.addTuner(shooterPidTuner);
+    topShooter.addFollower(bottomShooter, MotorAlignmentValue.Opposed);
   }
 
-  public void stopShooter() {
-    topShooter.set(0);
-    bottomShooter.set(0);
+  public Command stopShooter() {
+    return new ParallelCommandGroup(
+        topShooter.setVelocity(() -> 0.0, () -> RPM),
+        bottomShooter.setVelocity(() -> 0.0, () -> RPM));
   }
 
-  public Command stopShootCommand() {
-    return this.run(() -> stopShooter());
-  }
-
-  public void shoot() {
-    topShooter.set(PowerConstants.SHOOTER_POWER);
-    bottomShooter.set(-PowerConstants.SHOOTER_POWER);
-  }
-
-  public Command shootCommand() {
-    return this.run(() -> shoot());
-  }
-
-  public void RPMShoot(Double SHOOTER_RPM) {
-    // Command the loading drum's closed-loop controller to the dashboard RPM
-    topShooterController.setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
-    bottomShooterController.setSetpoint(DashboardConstants.SHOOTER_RPM, ControlType.kVelocity);
-  }
-
-  public Command RPMShootCommand(Double SHOOTER_RPM) {
-    return this.run(() -> RPMShoot(SHOOTER_RPM));
+  public Command shoot() {
+    return topShooter.setVelocity(() -> PowerConstants.SHOOTER_VELOCITY, () -> RPM);
   }
 
   @Override
-  public void periodic() {
-    // Update PID gains from dashboard values if they change
-    SparkFlexConfig shooterConfig = new SparkFlexConfig();
-    shooterConfig
-        .idleMode(IdleMode.kBrake)
-        .closedLoop
-        .pidf(
-            DashboardConstants.P, DashboardConstants.I, DashboardConstants.D, DashboardConstants.FF)
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .outputRange(-1, 1);
-
-    topShooter.configure(
-        shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    bottomShooter.configure(
-        shooterConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-  }
+  public void periodic() {}
 }
