@@ -2,7 +2,7 @@
  * All PID stuff needs to be comlpetely reworked to the new 2025+ RevLIB API
  **************************************************************************/
 
-package frc.robot.subsystems.aux;
+package frc.robot.subsystems;
 
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.aux;
+package frc.robot.subsystems;
 
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;

@@ -6,8 +6,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.PowerConstants;
-import frc.robot.subsystems.aux.Intake;
-import frc.robot.subsystems.aux.Shooter;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 public class HandleAutoShoot extends Command {
   /** Creates a new HandleAutonShoot. */

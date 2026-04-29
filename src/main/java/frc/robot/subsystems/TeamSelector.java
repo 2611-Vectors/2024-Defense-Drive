@@ -1,4 +1,4 @@
-package frc.robot.subsystems.aux;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
