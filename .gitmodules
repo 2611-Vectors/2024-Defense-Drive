@@ -1,0 +1,3 @@
+[submodule "src/main/java/frc/robot/VectorKit"]
+	path = src/main/java/frc/robot/VectorKit
+	url = https://github.com/2611-Vectors/VectorKit.git
