@@ -13,30 +13,29 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class PathfindToStart extends SequentialCommandGroup {
-  public PathfindToStart(PathPlannerAuto selectedAuto) {
-    Pose2d startPose = flipRed(selectedAuto.getStartingPose());
-    PathConstraints constraints = new PathConstraints(3.0, 2.5, 90.0, 720.0);
+    public PathfindToStart(PathPlannerAuto selectedAuto) {
+        Pose2d startPose = flipRed(selectedAuto.getStartingPose());
+        PathConstraints constraints = new PathConstraints(3.0, 2.5, 90.0, 720.0);
 
-    addCommands(AutoBuilder.pathfindToPose(startPose, constraints), selectedAuto);
-  }
-
-  public static Pose2d flipRed(Pose2d point) {
-    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-      point =
-          (new Pose2d(
-              FIELD_WIDTH - point.getX(),
-              FIELD_HEIGHT - point.getY(),
-              Rotation2d.fromDegrees(flipAngle(point.getRotation().getDegrees()))));
+        addCommands(AutoBuilder.pathfindToPose(startPose, constraints), selectedAuto);
     }
 
-    return point;
-  }
+    public static Pose2d flipRed(Pose2d point) {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+            point = (new Pose2d(
+                    FIELD_WIDTH - point.getX(),
+                    FIELD_HEIGHT - point.getY(),
+                    Rotation2d.fromDegrees(flipAngle(point.getRotation().getDegrees()))));
+        }
 
-  public static double flipAngle(double angle) {
-    double reflectedAngle = -180 - angle;
-    if (reflectedAngle < -180) {
-      return reflectedAngle + 360;
+        return point;
     }
-    return reflectedAngle;
-  }
+
+    public static double flipAngle(double angle) {
+        double reflectedAngle = -180 - angle;
+        if (reflectedAngle < -180) {
+            return reflectedAngle + 360;
+        }
+        return reflectedAngle;
+    }
 }
