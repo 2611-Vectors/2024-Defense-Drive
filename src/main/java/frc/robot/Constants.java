@@ -27,16 +27,25 @@ public class Constants {
     }
 
     public final class ShooterConstants {
-        public static final int TILT = 44;
         public static final int TOP_SHOOTER = 42;
         public static final int BOTTOM_SHOOTER = 41;
         public static final int LOADING_DRUM = 43;
     }
 
+    public final class PivotConstants {
+        public static final int TILT_ID = 44;
+        public static final int ENCODER_ID = 0;
+
+        public static final double PIVOT_OFFSET = 195.0;
+
+        public static final double MIN_ANGLE = 10.0;
+        public static final double MAX_ANGLE = 40.0;
+    }
+
     public static class ControllerConstants {
         public static final int DRIVER_CONTROLLER_ID = 0;
         public static final int OPERATOR_CONTROLLER_ID = 1;
-        public static final LinearVelocity MAX_DRIVE_SPEED = MetersPerSecond.of(3.25);
+        public static final LinearVelocity MAX_DRIVE_SPEED = MetersPerSecond.of(2.0);
         public static final AngularVelocity MAX_TURN_SPEED = DegreesPerSecond.of(270.0);
     }
 

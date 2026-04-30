@@ -1,20 +1,20 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.VectorKit.vision.Vision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVision;
 import frc.robot.VectorKit.vision.VisionIOPhotonVisionSim;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.PathfindToStart;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -27,8 +27,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     // Subsystems
     private final Drive m_Drive;
-    private final Shooter Shooter;
+    private final Shooter m_Shooter;
     private final Intake m_Intake;
+    private final Pivot m_Pivot;
 
     @SuppressWarnings("unused")
     private final Vision m_Vision;
@@ -41,8 +42,9 @@ public class RobotContainer {
     private final LoggedDashboardChooser<Command> autoChooser;
 
     public RobotContainer() {
-        Shooter = new Shooter();
+        m_Shooter = new Shooter();
         m_Intake = new Intake();
+        m_Pivot = new Pivot();
 
         switch (Constants.currentMode) {
             case REAL:
@@ -84,6 +86,17 @@ public class RobotContainer {
 
         autoChooser = new LoggedDashboardChooser<>("AutoChoices", AutoBuilder.buildAutoChooser());
 
+        // Set up SysId routines
+        autoChooser.addOption(
+                "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(m_Drive));
+        autoChooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(m_Drive));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Forward)", m_Drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Reverse)", m_Drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        autoChooser.addOption("Drive SysId (Dynamic Forward)", m_Drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption("Drive SysId (Dynamic Reverse)", m_Drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
         configureBindings();
     }
 
@@ -116,10 +129,18 @@ public class RobotContainer {
                                 m_Drive)
                         .ignoringDisable(true));
 
-        m_DriverController.a().whileTrue(m_Intake.intake());
+        m_DriverController.leftTrigger().whileTrue(m_Intake.intake());
+        m_DriverController.leftBumper().whileTrue(m_Intake.extake());
+        m_DriverController.rightTrigger().toggleOnTrue(m_Shooter.shoot());
+        m_DriverController.rightBumper().and(() -> m_Shooter.isUpToSpeed()).whileTrue(m_Intake.feed());
+
+        Command manualPivot = m_Pivot.manualPosition();
+        manualPivot.addRequirements(m_Pivot);
+        m_Pivot.setDefaultCommand(manualPivot);
     }
 
     public Command getAutonomousCommand() {
-        return new PathfindToStart(new PathPlannerAuto(autoChooser.get().getName()));
+        // return new PathfindToStart(new PathPlannerAuto(autoChooser.get().getName()));
+        return autoChooser.get();
     }
 }
